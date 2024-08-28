@@ -1,7 +1,10 @@
-from pytube import YouTube
 import tkinter as tk
-from tkinter import Label, ttk, Text
+from tkinter import Label, ttk, Text, messagebox, filedialog
+import os
+from pytubefix import YouTube
+from pytubefix.cli import on_progress
 
+# WINDOW
 def create_window() -> tk.Tk:
     window = tk.Tk()
     window.title('YouDL')
@@ -12,7 +15,36 @@ def create_window() -> tk.Tk:
     window.configure(bg='indianred')
     return window
 
-def add_button(window: tk.Tk) -> None:
+# HANDLE RADIO BUTTON
+def handle_radio_button(v: tk.StringVar, entry: tk.Entry) -> None:
+    selected_button = v.get()
+    entry_value = entry.get()
+    try:
+        if selected_button == 'mp3':
+                yt = YouTube(entry_value, on_progress_callback=on_progress)
+                video = yt.streams.filter(only_audio=True).first()
+                if video is not None:
+                    folder_selected = filedialog.askdirectory()
+                    destination = folder_selected
+                    out_file = video.download(output_path=destination)
+                    base, ext = os.path.splitext(out_file)
+                    new_file = base + '.mp3'
+                    os.rename(out_file, new_file)
+                    messagebox.showinfo('Success', 'Installation was completed.')
+                else:
+                    messagebox.showwarning('Watning', 'No audio stream found')
+
+
+        elif selected_button == 'mp4':
+            messagebox.showinfo('selected', 'mp4 selected')
+        elif selected_button == 'subtitles':
+            messagebox.showinfo('selected', 'subtitles selected')
+        else:
+            messagebox.showinfo('selected', 'unknown selection')
+    except Exception as e:
+        messagebox.showerror('error' , f'An error occured: {e}')
+# ENTRY
+def add_button(window: tk.Tk, v: tk.StringVar, entry: tk.Entry) -> None:
     style = ttk.Style()
     
     style.configure('TButton', 
@@ -23,10 +55,11 @@ def add_button(window: tk.Tk) -> None:
                     borderwidth=2,
                     highlightthickness=2)
     
-    button = ttk.Button(window, text='Download', style='TButton')
+    button = ttk.Button(window, text='Download', style='TButton', command=lambda: handle_radio_button(v, entry))
     button.pack(pady=(10, 10))
 
-def radio_button(window: tk.Tk) -> None:
+# RADIO BUTTON
+def radio_button(window: tk.Tk) -> tk.StringVar:
     v = tk.StringVar()
     v.set("mp3")
 
@@ -41,17 +74,21 @@ def radio_button(window: tk.Tk) -> None:
 
     subtitles_button = tk.Radiobutton(frame, text="Subtitles", variable=v, value="subtitles", bg='indianred', fg='black', font=('Helvetica', 12))
     subtitles_button.pack(side=tk.LEFT, padx=(5, 5))
+    return v
 
-def add_entry(window: tk.Tk) -> None:
+# ADD ENTRY
+def add_entry(window: tk.Tk) -> tk.Entry:
     entry = tk.Entry(window, justify=tk.LEFT, width=60)
     entry.pack(pady=(10, 10))
     entry.configure(highlightthickness=2,borderwidth=1,highlightbackground='black') 
+    return entry
 
+# MAIN
 def main():
     window = create_window()
-    add_entry(window)
-    radio_button(window)
-    add_button(window)
+    entry = add_entry(window)
+    v = radio_button(window)
+    add_button(window, v, entry)
     window.mainloop()
 
 if __name__ == "__main__":
