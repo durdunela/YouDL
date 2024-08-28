@@ -32,11 +32,22 @@ def handle_radio_button(v: tk.StringVar, entry: tk.Entry) -> None:
                     os.rename(out_file, new_file)
                     messagebox.showinfo('Success', 'Installation was completed.')
                 else:
-                    messagebox.showwarning('Watning', 'No audio stream found')
+                    messagebox.showwarning('Warning', 'No audio stream found')
 
 
         elif selected_button == 'mp4':
-            messagebox.showinfo('selected', 'mp4 selected')
+            yt = YouTube(entry_value, on_progress_callback = on_progress)
+            video = yt.streams.get_highest_resolution()
+            if video is not None:
+                folder_selected = filedialog.askdirectory()
+                destination = folder_selected
+                out_file = video.download(output_path=destination)
+                base, ext = os.path.splitext(out_file)
+                new_file = base + '.mp4'
+                os.rename(out_file, new_file)
+                messagebox.showinfo('Success', 'Installation was completed')
+            else:
+                messagebox.showwarning('Warning', 'No video stream found')
         elif selected_button == 'subtitles':
             messagebox.showinfo('selected', 'subtitles selected')
         else:
