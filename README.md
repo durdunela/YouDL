@@ -7,3 +7,8 @@ Application for downloading audio, video, and subtitles from YouTube. easily inp
 - Subtitles Download
 - Format Selection
 - clean GUI built with Tkinter
+
+# To-Do
+- Download Streams
+- Channels
+- Playlists
