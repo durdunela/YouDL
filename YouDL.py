@@ -1,8 +1,9 @@
 import tkinter as tk
 from tkinter import Label, ttk, Text, messagebox, filedialog
 import os
-from pytubefix import YouTube
+from pytubefix import YouTube, captions
 from pytubefix.cli import on_progress
+
 
 # WINDOW
 def create_window() -> tk.Tk:
@@ -24,8 +25,7 @@ def handle_radio_button(v: tk.StringVar, entry: tk.Entry) -> None:
                 yt = YouTube(entry_value, on_progress_callback=on_progress)
                 video = yt.streams.filter(only_audio=True).first()
                 if video is not None:
-                    folder_selected = filedialog.askdirectory()
-                    destination = folder_selected
+                    destination = filedialog.askdirectory()
                     out_file = video.download(output_path=destination)
                     base, ext = os.path.splitext(out_file)
                     new_file = base + '.mp3'
@@ -38,9 +38,8 @@ def handle_radio_button(v: tk.StringVar, entry: tk.Entry) -> None:
         elif selected_button == 'mp4':
             yt = YouTube(entry_value, on_progress_callback = on_progress)
             video = yt.streams.get_highest_resolution()
-            if video is not None:
-                folder_selected = filedialog.askdirectory()
-                destination = folder_selected
+            if video is not None: 
+                destination = filedialog.askdirectory()
                 out_file = video.download(output_path=destination)
                 base, ext = os.path.splitext(out_file)
                 new_file = base + '.mp4'
@@ -49,11 +48,20 @@ def handle_radio_button(v: tk.StringVar, entry: tk.Entry) -> None:
             else:
                 messagebox.showwarning('Warning', 'No video stream found')
         elif selected_button == 'subtitles':
-            messagebox.showinfo('selected', 'subtitles selected')
-        else:
-            messagebox.showinfo('selected', 'unknown selection')
+            yt = YouTube(entry_value, on_progress_callback= on_progress)
+            captions = yt.captions
+            if captions:
+                caption = yt.captions['en']                
+                xml_caption = caption.xml_captions
+
+                with open('output.txt', 'w', encoding='utf-8') as f:
+                    f.write(xml_caption)
+                messagebox.showinfo('Success', 'Installation was completed')
+            else:
+                messagebox.showwarning('Warning', 'No subtitles.')
     except Exception as e:
         messagebox.showerror('error' , f'An error occured: {e}')
+
 # ENTRY
 def add_button(window: tk.Tk, v: tk.StringVar, entry: tk.Entry) -> None:
     style = ttk.Style()
